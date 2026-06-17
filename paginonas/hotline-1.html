@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTLINE MIAMI 1 - CATALOGO Y MINI JUEGO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+        }
+
+        body {
+            background-color: #0a0514;
+            color: #fff;
+            display: flex;
+            min-height: 100vh;
+            animation: tv-flicker 0.15s infinite;
+        }
+
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 255, 0.05), rgba(0, 255, 255, 0.05));
+            z-index: 9999;
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff;
+            opacity: 0;
+            z-index: 10000;
+            pointer-events: none;
+            animation: change-channel 0.4s ease-out;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: #000;
+            border-right: 5px solid #ff00ff;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 1000; /* Sidebar al frente absoluto para evitar bloqueos */
+        }
+
+        .sidebar-title {
+            color: #ff00ff;
+            font-size: 2.2rem;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 0px #00ffff;
+            animation: text-glitch 1s infinite alternate;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            background: #0d0d0d;
+            color: #fff;
+            border: 3px solid #ff00ff;
+            padding: 15px;
+            font-size: 1.2rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            text-align: center;
+            box-shadow: 4px 4px 0px #00ffff;
+            display: block;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #ff00ff;
+            color: #000;
+            border-color: #ffff00;
+            box-shadow: -4px -4px 0px #00ffff;
+        }
+
+        .main-content {
+            margin-left: 300px;
+            flex-grow: 1;
+            padding: 40px;
+            background-image: linear-gradient(rgba(255, 0, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 20px;
+        }
+
+        .page-header {
+            font-size: 3rem;
+            color: #ffff00;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            border-bottom: 3px double #ff00ff;
+            padding-bottom: 10px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        .info-section {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ffff;
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: 5px 5px 0px #ff00ff;
+        }
+
+        .info-section h2 {
+            color: #ff00ff;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .info-section p {
+            font-family: monospace;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #e0e0e0;
+            margin-bottom: 15px;
+        }
+
+        .game-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-family: monospace;
+            background: #111;
+            padding: 10px;
+            border-left: 5px solid #ffff00;
+        }
+
+        .game-meta span {
+            color: #00ff00;
+        }
+
+        .arcade-container {
+            background: #000;
+            border: 4px solid #ff00ff;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
+            max-width: 800px;
+            margin-top: 20px;
+        }
+
+        .arcade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #00ffff;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .arcade-title {
+            color: #ffff00;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .score-board {
+            font-family: monospace;
+            font-size: 1.3rem;
+            color: #00ff00;
+        }
+
+        .game-screen {
+            width: 100%;
+            height: 350px;
+            background: #15051a;
+            border: 3px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .enemy {
+            width: 40px;
+            height: 40px;
+            background-color: #ff0000;
+            border: 4px solid #ffff00;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            box-shadow: 0 0 15px #ff0000;
+        }
+
+        .start-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .start-btn {
+            background: #ffff00;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px #ff00ff;
+        }
+
+        .start-btn:hover {
+            background: #ff00ff;
+            color: #fff;
+            box-shadow: -4px -4px 0px #ffff00;
+        }
+
+        @keyframes tv-flicker {
+            0% { opacity: 0.98; }
+            50% { opacity: 1; }
+            100% { opacity: 0.99; }
+        }
+
+        @keyframes change-channel {
+            0% { opacity: 1; background: #fff; }
+            30% { background: #1a001a; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes text-glitch {
+            0% { text-shadow: 2px 2px 0px #ff00ff, -2px -2px 0px #00ffff; }
+            100% { text-shadow: -2px -1px 0px #ff00ff, 2px 2px 0px #00ffff; }
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; position: relative; border-right: none; border-bottom: 5px solid #ff00ff; }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-title">Hotline Menu</div>
+        <nav class="sidebar-menu">
+            <a href="index.html" class="nav-btn">Principal</a>
+            <a href="hotline-1.html" class="nav-btn active">Hotline Miami</a>
+            <a href="hotline-2.html" class="nav-btn">Hotline Miami 2</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <h1 class="page-header">Hotline Miami (Entrega Original)</h1>
+        
+        <div class="info-section">
+            <h2>Sobre el Juego</h2>
+            <p>
+                Hotline Miami es un videojuego de accion superior en dos dimensiones desarrollado por Dennaton Games y lanzado en el año 2012. El juego destaca por su cruda violencia retro, una jugabilidad tactica frenetica y una estetica fuertemente influenciada por la cultura pop de los años ochenta y la pelicula Drive.
+            </p>
+            <p>
+                La trama se ambienta en un Miami alternativo de 1989, donde asumes el rol de Jacket, un sujeto misterioso que recibe instrucciones encriptadas por medio de su contestadora telefonica para limpiar edificios llenos de mafiosos rusos sin dejar rastro alguno.
+            </p>
+            <div class="game-meta">
+                <div>Desarrollador: <span>Dennaton Games</span></div>
+                <div>Distribuidor: <span>Devolver Digital</span></div>
+                <div>Lanzamiento: <span>23 de Octubre de 2012</span></div>
+            </div>
+        </div>
+
+        <div class="arcade-container">
+            <div class="arcade-header">
+                <div class="arcade-title">Minijuego: Masacre Clicker</div>
+                <div class="score-board">Puntos: <span id="score">0</span> | Combo: x<span id="combo">1</span></div>
+            </div>
+            
+            <div class="game-screen" id="gameScreen">
+                <div class="start-screen" id="startScreen">
+                    <p style="font-family: monospace; color: #00ff00; text-align: center; padding: 0 10px;">
+                        ELIMINA LOS OBJETIVOS ROJOS ANTES DE QUE SE ACUMULEN.<br>¡CUIDADO, CADA VEZ APARECEN MAS RAPIDO!
+                    </p>
+                    <button class="start-btn" id="btnIniciar">Iniciar Misión</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let combo = 1;
+        let gameActive = false;
+        let enemyTimeout;
+        let spawnRate = 1000; 
+        const gameScreen = document.getElementById('gameScreen');
+        const scoreDisplay = document.getElementById('score');
+        const comboDisplay = document.getElementById('combo');
+        const startScreen = document.getElementById('startScreen');
+        const btnIniciar = document.getElementById('btnIniciar');
+
+        btnIniciar.addEventListener('click', function(e) {
+            e.stopPropagation();
+            startGame();
+        });
+
+        function startGame() {
+            score = 0;
+            combo = 1;
+            spawnRate = 1000;
+            gameActive = true;
+            scoreDisplay.innerText = score;
+            comboDisplay.innerText = combo;
+            startScreen.style.display = 'none';
+            spawnEnemy();
+        }
+
+        function spawnEnemy() {
+            if (!gameActive) return;
+
+            const activeEnemies = gameScreen.getElementsByClassName('enemy');
+            if (activeEnemies.length > 5) {
+                while(activeEnemies.length > 0) {
+                    activeEnemies[0].remove();
+                }
+                gameOver();
+                return;
+            }
+
+            const enemy = document.createElement('div');
+            enemy.className = 'enemy';
+            
+            const x = Math.random() * (gameScreen.clientWidth - 50);
+            const y = Math.random() * (gameScreen.clientHeight - 50);
+            
+            enemy.style.left = x + 'px';
+            enemy.style.top = y + 'px';
+
+            enemy.addEventListener('click', function(e) {
+                e.stopPropagation(); 
+                if (!gameActive) return;
+                score += 10 * combo;
+                combo++;
+                scoreDisplay.innerText = score;
+                comboDisplay.innerText = combo;
+                
+                gameScreen.style.backgroundColor = '#400';
+                setTimeout(() => { gameScreen.style.backgroundColor = '#15051a'; }, 40);
+                
+                enemy.remove();
+            });
+
+            gameScreen.appendChild(enemy);
+
+            if (spawnRate > 300) spawnRate -= 25;
+            enemyTimeout = setTimeout(spawnEnemy, spawnRate);
+        }
+
+        // Corregido: Ahora solo rompe el combo si haces click EXACTAMENTE en el fondo gris del canvas de juego
+        gameScreen.addEventListener('click', function(e) {
+            if (!gameActive) return;
+            if (e.target === gameScreen) {
+                combo = 1;
+                comboDisplay.innerText = combo;
+            }
+        });
+
+        function gameOver() {
+            gameActive = false;
+            clearTimeout(enemyTimeout);
+            startScreen.style.display = 'flex';
+            startScreen.innerHTML = `
+                <p style="font-family: monospace; color: #ff0000; text-align: center;">TE ABRUMARON. MISION FALLIDA.<br>PUNTOS LOGRADOS: ${score}</p>
+                <button class="start-btn" id="btnReiniciar">Reintentar</button>
+            `;
+            document.getElementById('btnReiniciar').addEventListener('click', function(e){
+                e.stopPropagation();
+                startGame();
+            });
+        }
+    </script>
+</body>
+</html>
