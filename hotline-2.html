@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTLINE MIAMI 2 - EDICION MANIACA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+        }
+
+        body {
+            background-color: #120205;
+            color: #fff;
+            display: flex;
+            min-height: 100vh;
+            animation: tv-flicker 0.12s infinite;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.08), rgba(255, 255, 0, 0.03));
+            z-index: 9999;
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff;
+            opacity: 0;
+            z-index: 10000;
+            pointer-events: none;
+            animation: change-channel 0.4s ease-out;
+        }
+
+        /* BARRA LATERAL FIJA */
+        .sidebar {
+            width: 300px;
+            background-color: #000;
+            border-right: 5px solid #ff0000;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 5000; /* Prioridad máxima por encima del canvas */
+        }
+
+        .sidebar-title {
+            color: #ff0000;
+            font-size: 2.2rem;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 0px #ffff00;
+            animation: text-glitch 0.8s infinite alternate;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            background: #0d0d0d;
+            color: #fff;
+            border: 3px solid #ff0000;
+            padding: 15px;
+            font-size: 1.2rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            text-align: center;
+            box-shadow: 4px 4px 0px #ffff00;
+            display: block;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #ff0000;
+            color: #fff;
+            border-color: #ffff00;
+            box-shadow: -4px -4px 0px #ffff00;
+        }
+
+        .main-content {
+            margin-left: 300px;
+            flex-grow: 1;
+            padding: 40px;
+            background-image: linear-gradient(rgba(255, 0, 0, 0.02) 1px, transparent 1px);
+            background-size: 100% 15px;
+        }
+
+        .page-header {
+            font-size: 3.2rem;
+            color: #ffff00;
+            text-transform: uppercase;
+            margin-bottom: 35px;
+            border-bottom: 4px dashed #ff0000;
+            padding-bottom: 10px;
+            text-shadow: 3px 3px 0px #000;
+            letter-spacing: 1px;
+        }
+
+        .maniac-panel {
+            background: rgba(0, 0, 0, 0.85);
+            border: 3px solid #ff0000;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 6px 6px 0px #ff00ff;
+        }
+
+        .maniac-panel h2 {
+            color: #ff00ff;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            border-left: 6px solid #ffff00;
+            padding-left: 10px;
+        }
+
+        .maniac-panel p {
+            font-family: monospace;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .maniac-panel ul, .maniac-panel ol {
+            font-family: monospace;
+            font-size: 1.1rem;
+            margin-left: 25px;
+            margin-bottom: 25px;
+            color: #00ff00;
+            line-height: 1.8;
+        }
+
+        .maniac-panel ul li span, .maniac-panel ol li span {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* CONTENEDOR ARCADE */
+        .game-container {
+            background: #000;
+            border: 4px solid #ffff00;
+            padding: 20px;
+            box-shadow: 0 0 35px rgba(255, 0, 0, 0.4);
+            max-width: 800px;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px dashed #ff0000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            color: #ff0000;
+            font-size: 1.6rem;
+            text-transform: uppercase;
+        }
+
+        .score-board {
+            font-family: monospace;
+            font-size: 1.3rem;
+            color: #ffff00;
+        }
+
+        .game-screen {
+            width: 100%;
+            height: 400px;
+            background: #080103;
+            border: 3px solid #222;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* DISEÑO DE MISIL GIGANTE Y FÁCIL DE CLIQUEAR */
+        .nuke {
+            width: 35px;
+            height: 55px;
+            background: linear-gradient(to bottom, #ff0000, #ff5500);
+            border: 3px solid #ffff00;
+            position: absolute;
+            cursor: pointer;
+            border-radius: 6px 6px 50% 50%;
+            box-shadow: 0 0 15px #ff5500;
+            z-index: 20;
+        }
+
+        /* PANTALLAS DE INTERFAZ DEL JUEGO */
+        .start-screen, .gameover-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .gameover-screen {
+            display: none; /* Se activa solo al perder */
+            background: rgba(40, 0, 0, 0.95);
+        }
+
+        .start-btn {
+            background: #ff0000;
+            color: #fff;
+            border: none;
+            padding: 15px 35px;
+            font-size: 1.6rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px #ffff00;
+        }
+
+        .start-btn:hover {
+            background: #ffff00;
+            color: #000;
+            box-shadow: -4px -4px 0px #ff0000;
+        }
+
+        @keyframes tv-flicker {
+            0% { opacity: 0.97; }
+            50% { opacity: 0.99; }
+            100% { opacity: 0.96; }
+        }
+
+        @keyframes change-channel {
+            0% { opacity: 1; background: #fff; }
+            30% { background: #2b0000; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes text-glitch {
+            0% { text-shadow: 3px 2px 0px #ff0000, -2px -2px 0px #ffff00; }
+            100% { text-shadow: -2px -2px 0px #ff0000, 3px 1px 0px #ffff00; }
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; position: relative; border-right: none; border-bottom: 5px solid #ff0000; }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-title">Hotline Menu</div>
+        <nav class="sidebar-menu">
+            <a href="index.html" class="nav-btn">Principal</a>
+            <a href="hotline-1.html" class="nav-btn">Hotline Miami</a>
+            <a href="hotline-2.html" class="nav-btn active">Hotline Miami 2</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <h1 class="page-header">Hotline Miami 2: Wrong Number</h1>
+
+        <div class="maniac-panel">
+            <h2>Facciones en Descarga Psicodelica</h2>
+            <p>A diferencia del primer juego, la secuela expande la carniceria dividiendo la narrativa entre multiples facciones desquiciadas con habilidades unicas:</p>
+            
+            <ul>
+                <li><span>Los Fanaticos (The Fans):</span> Imitadores salvajes de Jacket que buscan fama asesinando mafiosos.</li>
+                <li><span>La Mafia Rusa (The Son):</span> El heredero del imperio intentando recuperar el control de las calles.</li>
+                <li><span>El Soldado (Beard):</span> Recuerdos de la sangrienta guerra de Hawaii antes del colapso.</li>
+                <li><span>El Detective Pardo:</span> Un policia maniaco que busca alterar las escenas del crimen para ganar notoriedad.</li>
+            </ul>
+
+            <h2>Cronologia del Fin del Mundo</h2>
+            <p>La historia no es lineal, brinca en el tiempo a traves de los siguientes arcos fatales:</p>
+            
+            <ol>
+                <li><span>1985 (Conflicto de Hawaii):</span> El origen militar del trauma nacional y la amistad con Jacket.</li>
+                <li><span>1989 (Masacres Paralelas):</span> Eventos ocultos ejecutados bajo la mesa durante el primer juego.</li>
+                <li><span>1991 (La Caida Total):</span> Los imitadores y fanaticos desatan el caos absoluto en las calles de Miami.</li>
+                <li><span>Fin del Camino:</span> El tragico desenlace nuclear que extingue la señal de transmision para siempre.</li>
+            </ol>
+        </div>
+
+        <div class="game-container">
+            <div class="game-header">
+                <div class="game-title">Mision Terminal: Defiende Miami</div>
+                <div class="score-board">Ojivas Interceptadas: <span id="nukeScore">0</span></div>
+            </div>
+
+            <div class="game-screen" id="gameScreen">
+                
+                <div class="start-screen" id="startScreen">
+                    <p style="font-family: monospace; color: #ff0000; text-align: center; padding: 0 15px; font-size: 1.1rem;">
+                        ¡ALERTA NUCLEAR DETECTADA!<br>DESTRUYE LOS MISILES ANTES DE QUE TOQUEN EL SUELO.
+                    </p>
+                    <button class="start-btn" id="btnIniciarNuke">Detener Impacto</button>
+                </div>
+
+                <div class="gameover-screen" id="gameoverScreen">
+                    <p id="gameOverText" style="font-family: monospace; color: #ff0000; font-size: 1.4rem; text-align: center;"></p>
+                    <button class="start-btn" id="btnReiniciarNuke">Reintentar Misión</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let nukeScore = 0;
+        let nukeGameActive = false;
+        let nukeInterval;
+        let fallSpeed = 3; 
+        let nukeSpawnRate = 1200;
+        
+        const gameScreen = document.getElementById('gameScreen');
+        const scoreDisplay = document.getElementById('nukeScore');
+        const startScreen = document.getElementById('startScreen');
+        const gameoverScreen = document.getElementById('gameoverScreen');
+        const gameOverText = document.getElementById('gameOverText');
+        
+        const btnIniciarNuke = document.getElementById('btnIniciarNuke');
+        const btnReiniciarNuke = document.getElementById('btnReiniciarNuke');
+
+        // BOTÓN INICIAR PRIMERA VEZ
+        btnIniciarNuke.addEventListener('click', function(e) {
+            e.stopPropagation();
+            startNukeGame();
+        });
+
+        // BOTÓN REINTENTAR (YA NO SE ROMPE)
+        btnReiniciarNuke.addEventListener('click', function(e) {
+            e.stopPropagation();
+            startNukeGame();
+        });
+
+        function startNukeGame() {
+            // Limpieza absoluta de misiles viejos antes de arrancar
+            const remainingNukes = gameScreen.getElementsByClassName('nuke');
+            while(remainingNukes.length > 0) {
+                remainingNukes[0].remove();
+            }
+
+            nukeScore = 0;
+            fallSpeed = 3.5;
+            nukeSpawnRate = 1100;
+            nukeGameActive = true;
+            
+            scoreDisplay.innerText = nukeScore;
+            startScreen.style.display = 'none';
+            gameoverScreen.style.display = 'none';
+            
+            // Limpiar cualquier bucle viejo residual
+            clearTimeout(nukeInterval);
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!nukeGameActive) return;
+            createNuke();
+            
+            if (nukeSpawnRate > 450) nukeSpawnRate -= 50;
+            nukeInterval = setTimeout(gameLoop, nukeSpawnRate);
+        }
+
+        function createNuke() {
+            if (!nukeGameActive) return;
+
+            const nuke = document.createElement('div');
+            nuke.className = 'nuke';
+            
+            // Posicionamiento
+            const randomX = Math.random() * (gameScreen.clientWidth - 40);
+            nuke.style.left = randomX + 'px';
+            nuke.style.top = '0px';
+
+            // CAPTURA DEL CLIC EN EL MISIL
+            nuke.addEventListener('mousedown', function(e) {
+                e.stopPropagation();
+                if (!nukeGameActive) return;
+                
+                nukeScore++;
+                scoreDisplay.innerText = nukeScore;
+                nuke.remove();
+                
+                // Sube la velocidad gradualmente
+                fallSpeed += 0.2;
+            });
+
+            gameScreen.appendChild(nuke);
+
+            let currentTop = 0;
+            function fall() {
+                if (!nukeGameActive) {
+                    nuke.remove();
+                    return;
+                }
+                
+                currentTop += fallSpeed;
+                nuke.style.top = currentTop + 'px';
+
+                // Si colisiona con el borde inferior del recuadro del juego
+                if (currentTop >= (gameScreen.clientHeight - 55)) {
+                    if (nuke.parentNode) {
+                        gameOver();
+                    }
+                } else if (nuke.parentNode) {
+                    requestAnimationFrame(fall);
+                }
+            }
+            requestAnimationFrame(fall);
+        }
+
+        function gameOver() {
+            nukeGameActive = false;
+            clearTimeout(nukeInterval);
+            
+            // Borrar misiles activos instantáneamente
+            const remainingNukes = gameScreen.getElementsByClassName('nuke');
+            while(remainingNukes.length > 0) {
+                remainingNukes[0].remove();
+            }
+
+            // Flash blanco CRT de explosión
+            gameScreen.style.backgroundColor = '#fff';
+            
+            setTimeout(() => {
+                gameScreen.style.backgroundColor = '#080103';
+                gameOverText.innerHTML = `MIAMI HA SIDO DESTRUIDA.<br>INTERCEPTASTE: ${nukeScore} MISILES.`;
+                gameoverScreen.style.display = 'flex'; // Desplegar menú de derrota
+            }, 200);
+        }
+    </script>
+</body>
+</html>
